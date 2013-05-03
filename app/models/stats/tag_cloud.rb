@@ -8,10 +8,6 @@ class TagCloud
     @cut_off = cut_off
   end
 
-  def min
-    0
-  end
-
   def tags
     return @tags if @tags
     params = [sql(@cut_off), user.id]
@@ -21,8 +17,8 @@ class TagCloud
     @tags = Tag.find_by_sql(params).sort_by { |tag| tag.name.downcase }
   end
 
-  def divisor
-    @divisor ||= ((max - min) / levels) + 1
+  def relative_size(tag)
+    (tag.count.to_i - min) / divisor
   end
 
 private
@@ -36,6 +32,14 @@ private
 
   def max
     @max ||= tag_counts.max
+  end
+
+  def min
+    0
+  end
+
+  def divisor
+    @divisor ||= ((max - min) / levels) + 1
   end
 
   # TODO: parameterize limit
