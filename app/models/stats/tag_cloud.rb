@@ -1,21 +1,15 @@
 # tag cloud code inspired by this article
 #  http://www.juixe.com/techknow/index.php/2006/07/15/acts-as-taggable-tag-cloud/
 class TagCloud
-  attr_accessor :user, :divisor, :min
+  attr_accessor :user
 
   def initialize(user, cut_off=nil)
     @user = user
     @cut_off = cut_off
   end
 
-  def compute
-    @tags = tags
-    max, @min = 0, 0
-    @tags.each { |t|
-      max = [t.count.to_i, max].max
-      @min = [t.count.to_i, @min].min
-    }
-    @divisor = ((max - @min) / levels) + 1
+  def min
+    0
   end
 
   def tags
@@ -27,9 +21,21 @@ class TagCloud
     @tags = Tag.find_by_sql(params).sort_by { |tag| tag.name.downcase }
   end
 
+  def divisor
+    @divisor ||= ((max - min) / levels) + 1
+  end
+
 private
   def levels
     10
+  end
+
+  def tag_counts
+    @tag_counts ||= @tags.collect {|t| t.count.to_i}
+  end
+
+  def max
+    @max ||= tag_counts.max
   end
 
   # TODO: parameterize limit
